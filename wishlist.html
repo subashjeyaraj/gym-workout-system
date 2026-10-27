@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Hub - Gear Wishlist</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .wishlist-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 22px;
+            margin-top: 25px;
+        }
+
+        .wish-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .wish-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--magenta-glow);
+            box-shadow: 0 10px 25px rgba(255, 0, 127, 0.2);
+        }
+
+        .wish-img-wrap {
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .wish-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .wish-body {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: space-between;
+        }
+
+        .wish-name {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .wish-price {
+            font-size: 1.25em;
+            font-weight: 800;
+            color: var(--cyan-glow);
+            margin-bottom: 14px;
+        }
+
+        .wish-actions {
+            display: flex;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Shared Top Navbar -->
+    <div id="gym-navbar"></div>
+
+    <div class="page-container">
+        
+        <div class="page-header">
+            <span class="badge badge-magenta" style="margin-bottom: 8px;">MONITORED GEAR</span>
+            <h1 class="page-title">❤️ Athlete Gear Wishlist</h1>
+            <p class="page-subtitle">Saved equipment and high-yield supplements ready for deployment.</p>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <a href="store.html" class="btn btn-outline btn-sm">
+                ← Back to Armory Store
+            </a>
+            <button class="btn btn-danger btn-sm" onclick="clearAllWishlist()">
+                Clear All Wishlist
+            </button>
+        </div>
+
+        <div class="wishlist-grid" id="wishlistGrid"></div>
+
+        <div id="emptyWishlistNotice" style="text-align: center; padding: 60px 20px; display: none;">
+            <div style="font-size: 3.5em; margin-bottom: 10px;">❤️</div>
+            <h3 style="color: #fff; margin-bottom: 8px;">Your Wishlist is Empty</h3>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">
+                Bookmark essential gear and supplements from the armory store to monitor them here.
+            </p>
+            <a href="store.html" class="btn btn-primary">
+                Browse Armory Catalog ➔
+            </a>
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script>
+        protectPage();
+        renderNavbar('store');
+
+        function renderWishlistView() {
+            const wishlist = getGymWishlist();
+            const grid = document.getElementById('wishlistGrid');
+            const emptyNotice = document.getElementById('emptyWishlistNotice');
+            grid.innerHTML = '';
+
+            if (wishlist.length === 0) {
+                emptyNotice.style.display = 'block';
+                return;
+            }
+
+            emptyNotice.style.display = 'none';
+
+            wishlist.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'wish-card';
+                card.innerHTML = `
+                    <div class="wish-img-wrap">
+                        <img src="${item.img || 'hi.jpg'}" alt="${item.name}" onerror="this.src='hi.jpg'">
+                    </div>
+                    <div class="wish-body">
+                        <div>
+                            <div class="wish-name">${item.name}</div>
+                            <div class="wish-price">₹${item.price.toLocaleString()}</div>
+                        </div>
+                        <div class="wish-actions">
+                            <button class="btn btn-primary btn-sm" style="flex:1;" onclick="moveToCart(${index})">
+                                + Move to Cart
+                            </button>
+                            <button class="btn btn-outline btn-sm" style="border-color:var(--danger); color:var(--danger);" onclick="removeWishItem(${index})" title="Remove">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function moveToCart(index) {
+            playCyberSound('click');
+            const wishlist = getGymWishlist();
+            const item = wishlist[index];
+            if (!item) return;
+
+            const cart = getGymCart();
+            const existing = cart.find(p => p.id === item.id);
+            if (existing) {
+                existing.qty = (existing.qty || 1) + 1;
+            } else {
+                cart.push({ ...item, qty: 1 });
+            }
+            saveGymCart(cart);
+
+            // Remove from wishlist
+            wishlist.splice(index, 1);
+            saveGymWishlist(wishlist);
+
+            renderWishlistView();
+            playCyberSound('success');
+            showGymToast(`Moved "${item.name}" to cart!`, "success");
+        }
+
+        function removeWishItem(index) {
+            playCyberSound('click');
+            const wishlist = getGymWishlist();
+            wishlist.splice(index, 1);
+            saveGymWishlist(wishlist);
+            renderWishlistView();
+            showGymToast("Item removed from wishlist.", "info");
+        }
+
+        function clearAllWishlist() {
+            if (confirm("Clear all saved wishlist items?")) {
+                saveGymWishlist([]);
+                renderWishlistView();
+                showGymToast("Wishlist cleared.", "info");
+            }
+        }
+
+        renderWishlistView();
+    </script>
+</body>
+</html>

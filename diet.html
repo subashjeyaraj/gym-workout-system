@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Hub - Diet & Bio-Fuel Nutrition</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .diet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .section-header h2 {
+            font-size: 1.25em;
+            color: #fff;
+            margin: 0;
+        }
+
+        .section-header span {
+            font-size: 1.5em;
+        }
+
+        /* Hydration Station */
+        .water-bar-container {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: var(--radius-full);
+            height: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 246, 255, 0.3);
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .water-bar-fill {
+            background: linear-gradient(90deg, #00b4d8, var(--cyan-glow));
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+            box-shadow: 0 0 15px var(--cyan-glow);
+        }
+
+        .glasses-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0;
+            justify-content: center;
+        }
+
+        .glass-icon {
+            font-size: 1.6em;
+            opacity: 0.25;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .glass-icon.filled {
+            opacity: 1;
+            filter: drop-shadow(0 0 8px var(--cyan-glow));
+            transform: scale(1.1);
+        }
+
+        .macro-pill {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75em;
+            font-weight: 700;
+            margin-right: 5px;
+        }
+
+        .macro-p { background: rgba(255, 0, 127, 0.2); color: var(--magenta-glow); border: 1px solid rgba(255, 0, 127, 0.4); }
+        .macro-c { background: rgba(0, 246, 255, 0.2); color: var(--cyan-glow); border: 1px solid rgba(0, 246, 255, 0.4); }
+        .macro-f { background: rgba(255, 183, 3, 0.2); color: var(--gold-glow); border: 1px solid rgba(255, 183, 3, 0.4); }
+
+        .meal-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 15px;
+        }
+
+        .meal-item {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--cyan-glow);
+        }
+
+        .meal-item h4 {
+            font-size: 0.95em;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .meal-item p {
+            font-size: 0.82em;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Shared Top Navbar -->
+    <div id="gym-navbar"></div>
+
+    <div class="page-container">
+        
+        <div class="page-header">
+            <span class="badge badge-magenta" style="margin-bottom: 8px;">NUTRITIONAL INTELLIGENCE</span>
+            <h1 class="page-title">Diet & Bio-Fuel Protocol</h1>
+            <p class="page-subtitle">Calculate caloric equilibrium, deploy meal protocols, and calibrate hydration.</p>
+        </div>
+
+        <div class="diet-grid">
+            
+            <!-- BMI & Calorie Target Station -->
+            <div class="card-glass">
+                <div class="section-header">
+                    <span>⚡</span>
+                    <h2>BMI & Energy Targets</h2>
+                </div>
+                
+                <div style="display:flex; gap: 10px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">Height (cm)</label>
+                        <input type="number" id="calcHeight" placeholder="178">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">Weight (kg)</label>
+                        <input type="number" id="calcWeight" placeholder="75">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-block" onclick="calculateBioMetrics()">
+                    Calibrate Energy Metrics
+                </button>
+
+                <div id="bmiOutput" style="margin-top: 20px; display: none;">
+                    <div style="background: rgba(0, 0, 0, 0.4); border-radius: var(--radius-md); padding: 15px; border: 1px solid var(--border-color);">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-size:0.85em; color:var(--text-muted);">SCORE</span>
+                            <span class="badge badge-cyan" id="bmiStatusPill">OPTIMAL</span>
+                        </div>
+                        <div style="font-size: 2.2em; font-weight: 800; color: var(--cyan-glow); margin: 6px 0;" id="bmiValueDisplay">
+                            23.7
+                        </div>
+                        <div style="font-size:0.88em; color:var(--text-secondary); line-height: 1.5;" id="calorieTargetsDisplay">
+                            <!-- Filled dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Targeted Diet Protocols -->
+            <div class="card-glass">
+                <div class="section-header">
+                    <span>🥗</span>
+                    <h2>Diet Protocols</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Select Tactical Objective</label>
+                    <select id="dietObjective" onchange="loadDietPlan()">
+                        <option value="muscle_gain">The Titan Protocol (Hypertrophy / Bulking)</option>
+                        <option value="weight_loss">The Shred Protocol (Caloric Deficit / Cut)</option>
+                        <option value="maintenance">Conditioning & Lean Maintenance</option>
+                    </select>
+                </div>
+
+                <div id="dietPlanContainer">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Targeted Meal Options -->
+            <div class="card-glass">
+                <div class="section-header">
+                    <span>🍳</span>
+                    <h2>Macro Meal Suggestions</h2>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Dietary Preference</label>
+                    <select id="mealPreference" onchange="loadMealOptions()">
+                        <option value="non-veg">Pro-Protein (Non-Vegetarian)</option>
+                        <option value="veg">Plant-Powered (Vegetarian / Vegan)</option>
+                    </select>
+                </div>
+
+                <div id="mealOptionsContainer">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- Visual Hydration Station -->
+            <div class="card-glass">
+                <div class="section-header">
+                    <span>💧</span>
+                    <h2>Hydration Command Center</h2>
+                </div>
+
+                <p style="font-size: 0.88em; color: var(--text-muted);">
+                    Optimal hydration maximizes muscle protein synthesis and reduces fatigue.
+                </p>
+
+                <div class="water-bar-container">
+                    <div class="water-bar-fill" id="waterBarFill"></div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; font-size:0.85em; font-weight:700;">
+                    <span id="waterTextProgress">0 / 8 Glasses (0 ml)</span>
+                    <span class="text-cyan" id="waterPercentage">0%</span>
+                </div>
+
+                <div class="glasses-display" id="glassesDisplay">
+                    <!-- 8 glasses rendered here -->
+                </div>
+
+                <div style="display:flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn btn-primary btn-block btn-sm" onclick="addWater(1)">
+                        +1 Glass (250ml)
+                    </button>
+                    <button class="btn btn-outline btn-sm" onclick="addWater(-1)" title="Remove 1 glass">
+                        -1
+                    </button>
+                    <button class="btn btn-outline btn-sm" onclick="resetWater()" title="Reset daily log">
+                        ↺
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script>
+        const user = protectPage();
+        renderNavbar('diet');
+
+        // Prepopulate user data
+        if (user) {
+            document.getElementById('calcHeight').value = user.height || 178;
+            document.getElementById('calcWeight').value = user.weight || 75;
+            if (user.goal === 'weight_loss') {
+                document.getElementById('dietObjective').value = 'weight_loss';
+            }
+        }
+
+        // Calculate BMI & Calories
+        function calculateBioMetrics() {
+            playCyberSound('click');
+            const h = parseFloat(document.getElementById('calcHeight').value);
+            const w = parseFloat(document.getElementById('calcWeight').value);
+
+            if (!h || !w || h < 80 || w < 30) {
+                showGymToast("Please input valid height & weight metrics.", "error");
+                return;
+            }
+
+            const bmi = (w / Math.pow(h / 100, 2)).toFixed(1);
+            let status = 'Optimal';
+            let pillClass = 'badge-green';
+
+            if (bmi < 18.5) { status = 'Underweight'; pillClass = 'badge-cyan'; }
+            else if (bmi < 24.9) { status = 'Optimal Baseline'; pillClass = 'badge-green'; }
+            else if (bmi < 29.9) { status = 'Overweight'; pillClass = 'badge-magenta'; }
+            else { status = 'High Risk'; pillClass = 'badge-magenta'; }
+
+            // Maintenance estimation (Harris-Benedict simplified formula)
+            const bmr = Math.round(10 * w + 6.25 * h - 5 * 25 + 5);
+            const maintenance = Math.round(bmr * 1.45);
+            const bulk = maintenance + 400;
+            const cut = maintenance - 500;
+
+            document.getElementById('bmiValueDisplay').textContent = `${bmi} BMI`;
+            const pill = document.getElementById('bmiStatusPill');
+            pill.textContent = status.toUpperCase();
+            pill.className = `badge ${pillClass}`;
+
+            document.getElementById('calorieTargetsDisplay').innerHTML = `
+                <div>🔥 <strong>Maintenance:</strong> ~${maintenance} kcal/day</div>
+                <div>⚡ <strong>Titan Hypertrophy:</strong> ~${bulk} kcal/day (+400)</div>
+                <div>✂️ <strong>Shred Deficit:</strong> ~${cut} kcal/day (-500)</div>
+            `;
+
+            document.getElementById('bmiOutput').style.display = 'block';
+            playCyberSound('success');
+        }
+
+        // Load targeted diet plan
+        function loadDietPlan() {
+            const obj = document.getElementById('dietObjective').value;
+            const container = document.getElementById('dietPlanContainer');
+            
+            if (obj === 'muscle_gain') {
+                container.innerHTML = `
+                    <ul class="meal-list">
+                        <li class="meal-item">
+                            <h4>🌅 Morning Fuel: Power Oatmeal & Eggs</h4>
+                            <p>80g Rolled oats with almond butter, 4 eggs, and a banana.</p>
+                            <span class="macro-pill macro-p">35g Protein</span>
+                            <span class="macro-pill macro-c">65g Carbs</span>
+                            <span class="macro-pill macro-f">18g Fats</span>
+                        </li>
+                        <li class="meal-item">
+                            <h4>☀️ Midday Blast: Titan Chicken/Tofu Bowl</h4>
+                            <p>200g Grilled breast or paneer, basmati rice, steamed broccoli.</p>
+                            <span class="macro-pill macro-p">45g Protein</span>
+                            <span class="macro-pill macro-c">70g Carbs</span>
+                            <span class="macro-pill macro-f">14g Fats</span>
+                        </li>
+                        <li class="meal-item">
+                            <h4>🌙 Night Recovery: Salmon/Lentils & Sweet Potato</h4>
+                            <p>Wild salmon or rich lentils with baked sweet potato and greens.</p>
+                            <span class="macro-pill macro-p">38g Protein</span>
+                            <span class="macro-pill macro-c">50g Carbs</span>
+                            <span class="macro-pill macro-f">16g Fats</span>
+                        </li>
+                    </ul>
+                `;
+            } else if (obj === 'weight_loss') {
+                container.innerHTML = `
+                    <ul class="meal-list">
+                        <li class="meal-item">
+                            <h4>🌅 Morning: Berry Chia Greek Yogurt</h4>
+                            <p>200g Low-fat Greek yogurt, mixed berries, chia seeds, black coffee.</p>
+                            <span class="macro-pill macro-p">24g Protein</span>
+                            <span class="macro-pill macro-c">25g Carbs</span>
+                            <span class="macro-pill macro-f">6g Fats</span>
+                        </li>
+                        <li class="meal-item">
+                            <h4>☀️ Midday: High-Fiber Turkey/Soya Salad</h4>
+                            <p>Lean meat or soya chunks tossed with mixed leafy greens and vinaigrette.</p>
+                            <span class="macro-pill macro-p">38g Protein</span>
+                            <span class="macro-pill macro-c">18g Carbs</span>
+                            <span class="macro-pill macro-f">10g Fats</span>
+                        </li>
+                        <li class="meal-item">
+                            <h4>🌙 Night: Steamed Fish or Spiced Paneer with Greens</h4>
+                            <p>Light white fish or grilled paneer with asparagus and zucchini.</p>
+                            <span class="macro-pill macro-p">32g Protein</span>
+                            <span class="macro-pill macro-c">12g Carbs</span>
+                            <span class="macro-pill macro-f">8g Fats</span>
+                        </li>
+                    </ul>
+                `;
+            } else {
+                container.innerHTML = `
+                    <ul class="meal-list">
+                        <li class="meal-item">
+                            <h4>🌅 Balanced Breakfast: Avocado Toast with Poached Eggs</h4>
+                            <p>Whole grain sourdough, 1/2 avocado, 2 eggs, fresh citrus.</p>
+                            <span class="macro-pill macro-p">22g Protein</span>
+                            <span class="macro-pill macro-c">40g Carbs</span>
+                            <span class="macro-pill macro-f">18g Fats</span>
+                        </li>
+                        <li class="meal-item">
+                            <h4>☀️ Clean Lunch: Quinoa & Grilled Chicken Fajita</h4>
+                            <p>Bell peppers, seasoned chicken, black beans, and quinoa.</p>
+                            <span class="macro-pill macro-p">40g Protein</span>
+                            <span class="macro-pill macro-c">55g Carbs</span>
+                            <span class="macro-pill macro-f">12g Fats</span>
+                        </li>
+                    </ul>
+                `;
+            }
+        }
+
+        // Meal suggestions
+        function loadMealOptions() {
+            const pref = document.getElementById('mealPreference').value;
+            const container = document.getElementById('mealOptionsContainer');
+
+            if (pref === 'veg') {
+                container.innerHTML = `
+                    <ul class="meal-list">
+                        <li class="meal-item">
+                            <h4>🌱 Paneer & Chickpea Power Bowl</h4>
+                            <p>High satiety vegetarian protein with complex fiber.</p>
+                        </li>
+                        <li class="meal-item">
+                            <h4>🌱 Lentil & Tempeh Sauté with Brown Rice</h4>
+                            <p>Rich iron, zinc, and complete amino acid profile.</p>
+                        </li>
+                        <li class="meal-item">
+                            <h4>🌱 Whey Isolate Smoothie with Chia & Oats</h4>
+                            <p>Fast-absorbing post-workout recovery shake.</p>
+                        </li>
+                    </ul>
+                `;
+            } else {
+                container.innerHTML = `
+                    <ul class="meal-list">
+                        <li class="meal-item">
+                            <h4>🍗 Grilled Citrus Herb Chicken Breast</h4>
+                            <p>Ultra-lean 50g protein per 200g serving with zero carbs.</p>
+                        </li>
+                        <li class="meal-item">
+                            <h4>🐟 Atlantic Salmon Fillet with Asparagus</h4>
+                            <p>Packed with anti-inflammatory Omega-3 fatty acids.</p>
+                        </li>
+                        <li class="meal-item">
+                            <h4>🍳 4-Egg White Omelet with Lean Turkey Bacon</h4>
+                            <p>Instant bio-available morning protein fuel.</p>
+                        </li>
+                    </ul>
+                `;
+            }
+        }
+
+        // Hydration Logic with LocalStorage
+        let currentGlasses = parseInt(localStorage.getItem('gymHydrationGlasses')) || 0;
+        const totalGlassesTarget = 8;
+
+        function updateWaterUI() {
+            const pct = Math.min(100, Math.round((currentGlasses / totalGlassesTarget) * 100));
+            document.getElementById('waterBarFill').style.width = `${pct}%`;
+            document.getElementById('waterPercentage').textContent = `${pct}%`;
+            document.getElementById('waterTextProgress').textContent = 
+                `${currentGlasses} / ${totalGlassesTarget} Glasses (${currentGlasses * 250} ml)`;
+
+            const display = document.getElementById('glassesDisplay');
+            display.innerHTML = '';
+            for (let i = 1; i <= totalGlassesTarget; i++) {
+                const span = document.createElement('span');
+                span.className = `glass-icon ${i <= currentGlasses ? 'filled' : ''}`;
+                span.textContent = '🥛';
+                span.title = `Glass ${i} (250ml)`;
+                span.onclick = () => {
+                    currentGlasses = i;
+                    localStorage.setItem('gymHydrationGlasses', currentGlasses);
+                    updateWaterUI();
+                    playCyberSound('click');
+                };
+                display.appendChild(span);
+            }
+        }
+
+        function addWater(amount) {
+            playCyberSound('click');
+            currentGlasses = Math.max(0, currentGlasses + amount);
+            localStorage.setItem('gymHydrationGlasses', currentGlasses);
+            updateWaterUI();
+            if (currentGlasses >= totalGlassesTarget) {
+                playCyberSound('success');
+                showGymToast("🎯 Daily Hydration Goal Reached! Stay fueled.", "success");
+            }
+        }
+
+        function resetWater() {
+            playCyberSound('click');
+            currentGlasses = 0;
+            localStorage.setItem('gymHydrationGlasses', 0);
+            updateWaterUI();
+            showGymToast("Hydration counter reset.", "info");
+        }
+
+        // Initialize defaults
+        calculateBioMetrics();
+        loadDietPlan();
+        loadMealOptions();
+        updateWaterUI();
+    </script>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Hub - Secure Checkout & Payment</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .checkout-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            padding: 20px;
+        }
+
+        .checkout-card {
+            width: 100%;
+            max-width: 480px;
+            background: var(--bg-surface);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 34px 28px;
+            box-shadow: var(--shadow-card);
+            text-align: center;
+        }
+
+        .order-badge-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.85em;
+        }
+
+        .amount-display-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px dashed var(--cyan-glow);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .amount-val {
+            font-size: 2.4em;
+            font-weight: 800;
+            color: var(--cyan-glow);
+            text-shadow: 0 0 15px rgba(0, 246, 255, 0.5);
+            margin-top: 4px;
+        }
+
+        .pay-option-btn {
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: var(--radius-md);
+            border: none;
+            font-weight: 700;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #fff;
+        }
+
+        .btn-phonepe {
+            background: linear-gradient(135deg, #5f259f, #7e3ff2);
+            box-shadow: 0 4px 15px rgba(126, 63, 242, 0.4);
+        }
+
+        .btn-phonepe:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(126, 63, 242, 0.7);
+        }
+
+        .btn-gpay {
+            background: linear-gradient(135deg, #1a73e8, #3ea6ff);
+            box-shadow: 0 4px 15px rgba(26, 115, 232, 0.4);
+        }
+
+        .btn-gpay:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(26, 115, 232, 0.7);
+        }
+
+        .btn-cod {
+            background: linear-gradient(135deg, var(--cyan-glow), var(--cyan-dim));
+            color: #000;
+            box-shadow: 0 4px 15px rgba(0, 246, 255, 0.4);
+        }
+
+        .btn-cod:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 246, 255, 0.7);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Shared Top Navbar -->
+    <div id="gym-navbar"></div>
+
+    <div class="checkout-wrapper">
+        <div class="checkout-card">
+            
+            <div class="order-badge-row">
+                <span class="badge badge-cyan" id="orderIdBadge">ORDER #GH-8492</span>
+                <span style="color: var(--green-glow);">🔒 256-Bit Encrypted</span>
+            </div>
+
+            <h2 style="font-size: 1.6em; color: #fff; margin-bottom: 6px;">Select Payment Gateway</h2>
+            <p style="font-size: 0.88em; color: var(--text-muted); margin-bottom: 20px;">
+                Choose an authorized digital or cash settlement protocol.
+            </p>
+
+            <!-- Order Total Display -->
+            <div class="amount-display-box">
+                <div style="font-size: 0.82em; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">
+                    Total Payable Amount
+                </div>
+                <div class="amount-val" id="paymentAmountDisplay">₹0</div>
+                <div style="font-size: 0.8em; color: var(--text-secondary); margin-top: 4px;" id="orderItemsSummary">
+                    0 Tactical Items Included
+                </div>
+            </div>
+
+            <!-- Payment Methods -->
+            <button class="pay-option-btn btn-phonepe" onclick="initiatePayment('PhonePe UPI')">
+                <span>🟣</span> Pay with PhonePe UPI
+            </button>
+
+            <button class="pay-option-btn btn-gpay" onclick="initiatePayment('Google Pay UPI')">
+                <span>🔵</span> Pay with Google Pay
+            </button>
+
+            <button class="pay-option-btn btn-cod" onclick="initiateCod()">
+                <span>💵</span> Cash On Delivery (COD)
+            </button>
+
+            <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                <a href="store.html" style="color: var(--text-muted); font-size: 0.85em; text-decoration: none;">
+                    ← Return to Armory Store
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script>
+        protectPage();
+        renderNavbar('store');
+
+        // Generate or load order summary
+        const summary = JSON.parse(localStorage.getItem('gymOrderSummary')) || {
+            total: 2950,
+            itemsCount: 1
+        };
+
+        const randomOrderId = "GH-" + Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('orderIdBadge').textContent = `ORDER #${randomOrderId}`;
+        document.getElementById('paymentAmountDisplay').textContent = `₹${summary.total.toLocaleString()}`;
+        document.getElementById('orderItemsSummary').textContent = `${summary.itemsCount} Tactical Items Included`;
+
+        function initiatePayment(method) {
+            playCyberSound('click');
+            localStorage.setItem('gymPaymentMethod', method);
+            localStorage.setItem('gymActiveOrderId', randomOrderId);
+            showGymToast(`Connecting to ${method}...`, "info");
+            setTimeout(() => {
+                window.location.href = "upi-processing.html";
+            }, 500);
+        }
+
+        function initiateCod() {
+            playCyberSound('click');
+            localStorage.setItem('gymPaymentMethod', 'Cash on Delivery');
+            localStorage.setItem('gymActiveOrderId', randomOrderId);
+            showGymToast("COD Order Logged. Confirming...", "info");
+            setTimeout(() => {
+                window.location.href = "order-success.html";
+            }, 500);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Hub - Order Confirmed</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .success-card {
+            background: var(--bg-surface);
+            backdrop-filter: var(--backdrop-blur);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 40px 32px;
+            text-align: center;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: var(--shadow-card), 0 0 50px rgba(0, 245, 155, 0.2);
+            animation: popUp 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes popUp {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .check-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 4px solid var(--green-glow);
+            box-shadow: 0 0 30px var(--green-glow);
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px var(--green-glow); }
+            50% { box-shadow: 0 0 45px var(--green-glow); }
+        }
+
+        .check-circle span {
+            font-size: 2.5em;
+            color: var(--green-glow);
+        }
+
+        .receipt-box {
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px;
+            margin: 20px 0;
+            text-align: left;
+            font-size: 0.88em;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .receipt-row:last-child {
+            margin-bottom: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 8px;
+            font-weight: 700;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="success-card">
+        <div class="check-circle">
+            <span>✓</span>
+        </div>
+
+        <span class="badge badge-green" style="margin-bottom: 8px;">ORDER VERIFIED & DISPATCHED</span>
+        <h1 style="color: var(--cyan-glow); font-size: 1.8em; margin-bottom: 6px;">Deployment Confirmed</h1>
+        <p style="color: var(--text-muted); font-size: 0.9em;">
+            Your tactical nutrition and gear have been booked for immediate fulfillment.
+        </p>
+
+        <div class="receipt-box">
+            <div class="receipt-row">
+                <span>Order Reference:</span>
+                <strong style="color: var(--cyan-glow);" id="recOrderId">#GH-8492</strong>
+            </div>
+            <div class="receipt-row">
+                <span>Payment Mode:</span>
+                <span id="recPayMethod">PhonePe UPI</span>
+            </div>
+            <div class="receipt-row">
+                <span>Estimated Arrival:</span>
+                <span id="recEtaDate">3 Business Days</span>
+            </div>
+            <div class="receipt-row">
+                <span>Total Settled:</span>
+                <span class="text-cyan" id="recTotalAmount">₹2,950</span>
+            </div>
+        </div>
+
+        <div style="display:flex; gap: 10px;">
+            <a href="store.html" class="btn btn-primary" style="flex:1;">
+                Continue Shopping
+            </a>
+            <a href="dashboard.html" class="btn btn-outline" style="flex:1;">
+                Return to Base
+            </a>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script>
+        // Clear active cart upon successful purchase
+        localStorage.removeItem('gymCart');
+
+        const orderId = localStorage.getItem('gymActiveOrderId') || 'GH-9024';
+        const method = localStorage.getItem('gymPaymentMethod') || 'Digital UPI';
+        const summary = JSON.parse(localStorage.getItem('gymOrderSummary')) || { total: 2950 };
+
+        document.getElementById('recOrderId').textContent = `#${orderId}`;
+        document.getElementById('recPayMethod').textContent = method;
+        document.getElementById('recTotalAmount').textContent = `₹${summary.total.toLocaleString()}`;
+
+        // Arrival in 3 days
+        const eta = new Date();
+        eta.setDate(eta.getDate() + 3);
+        document.getElementById('recEtaDate').textContent = eta.toLocaleDateString(undefined, { 
+            weekday: 'short', month: 'short', day: 'numeric' 
+        });
+
+        playCyberSound('success');
+    </script>
+</body>
+</html>

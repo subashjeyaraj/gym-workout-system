@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Hub - Armory & Supplement Store</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .store-layout {
+            display: grid;
+            grid-template-columns: 2.5fr 1fr;
+            gap: 30px;
+            margin-top: 25px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: var(--radius-full);
+            font-size: 0.88em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .tab-btn.active, .tab-btn:hover {
+            background: var(--cyan-glow);
+            color: #000;
+            border-color: var(--cyan-glow);
+            box-shadow: 0 0 15px rgba(0, 246, 255, 0.4);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 22px;
+        }
+
+        .product-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--cyan-glow);
+            box-shadow: 0 10px 25px rgba(0, 246, 255, 0.2);
+        }
+
+        .product-img-wrap {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .product-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .product-card:hover .product-img-wrap img {
+            transform: scale(1.08);
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 0.7em;
+        }
+
+        .product-body {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: space-between;
+        }
+
+        .product-name {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .product-price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0 14px;
+        }
+
+        .product-price {
+            font-size: 1.3em;
+            font-weight: 800;
+            color: var(--cyan-glow);
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .product-actions .btn {
+            flex: 1;
+            padding: 9px 12px;
+            font-size: 0.82em;
+        }
+
+        /* Cart Sidebar */
+        .cart-card {
+            position: sticky;
+            top: 90px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .cart-items-list {
+            list-style: none;
+            padding: 0;
+            max-height: 260px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+
+        .cart-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.88em;
+        }
+
+        .cart-qty-ctrl {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .qty-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 800;
+        }
+
+        .qty-btn:hover {
+            background: var(--cyan-glow);
+            color: #000;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.88em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .summary-total {
+            font-size: 1.25em;
+            font-weight: 800;
+            color: #fff;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            padding-top: 12px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .store-layout {
+                grid-template-columns: 1fr;
+            }
+            .cart-card {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Shared Top Navbar -->
+    <div id="gym-navbar"></div>
+
+    <div class="page-container">
+        
+        <div class="page-header">
+            <span class="badge badge-cyan" style="margin-bottom: 8px;">VERIFIED GEAR & BIO-ENHANCERS</span>
+            <h1 class="page-title">Armory & Supplement Store</h1>
+            <p class="page-subtitle">Pure pharmaceutical-grade nutrition and heavy-duty steel equipment.</p>
+        </div>
+
+        <!-- Filter Navigation -->
+        <div class="filter-tabs">
+            <button class="tab-btn active" onclick="filterCatalog('all', this)">All Armory</button>
+            <button class="tab-btn" onclick="filterCatalog('supplements', this)">⚡ Supplements</button>
+            <button class="tab-btn" onclick="filterCatalog('equipment', this)">🏋️ Equipment</button>
+            <button class="tab-btn" onclick="window.location.href='wishlist.html'" style="margin-left: auto; border-color: var(--magenta-glow); color: var(--magenta-glow);">
+                ❤️ View Wishlist
+            </button>
+        </div>
+
+        <div class="store-layout">
+            
+            <!-- Product Catalog Grid -->
+            <div>
+                <div class="products-grid" id="catalogGrid"></div>
+            </div>
+
+            <!-- Active Cart Sidebar -->
+            <div>
+                <div class="cart-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h3 style="font-size: 1.2em; color: #fff;">🛒 Active Cart</h3>
+                        <span class="badge badge-cyan" id="cartCountBadge">0 Items</span>
+                    </div>
+
+                    <ul class="cart-items-list" id="cartItemsList"></ul>
+
+                    <div id="cartSummaryBox" style="display: none;">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span id="subtotalDisplay">₹0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Estimated Tax (18% GST)</span>
+                            <span id="taxDisplay">₹0</span>
+                        </div>
+                        <div class="summary-row" style="color: var(--green-glow);">
+                            <span>Tactical Shipping</span>
+                            <span>FREE</span>
+                        </div>
+                        <div class="summary-row summary-total">
+                            <span>Grand Total</span>
+                            <span class="text-cyan" id="totalDisplay">₹0</span>
+                        </div>
+
+                        <button class="btn btn-primary btn-block" style="margin-top: 18px;" onclick="proceedToCheckout()">
+                            Secure Checkout ➔
+                        </button>
+                    </div>
+
+                    <div id="emptyCartNotice" style="text-align: center; padding: 25px 0; color: var(--text-muted); font-size: 0.9em;">
+                        Your tactical cart is empty.<br>Select items from the catalog.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script>
+        protectPage();
+        renderNavbar('store');
+
+        // Master Catalog Database
+        const catalog = [
+            { id: 1, category: 'supplements', name: 'Whey Protein Isolate', price: 2500, img: 'whey.jpeg', badge: 'Best Seller' },
+            { id: 2, category: 'supplements', name: 'Micronized Creatine', price: 1200, img: 'creatine.jpg', badge: 'Pure Monohydrate' },
+            { id: 3, category: 'supplements', name: 'Elite Multivitamins', price: 800, img: 'mv.jpeg', badge: 'Immunity' },
+            { id: 101, category: 'equipment', name: 'Cast Iron Dumbbells (Pair)', price: 1500, img: 'db.jpeg', badge: 'Heavy Steel' },
+            { id: 102, category: 'equipment', name: 'Pro Grip Yoga Mat', price: 500, img: 'yoga.jpeg', badge: 'High Density' },
+            { id: 103, category: 'equipment', name: 'Heavy Resistance Bands', price: 700, img: 'band.jpeg', badge: 'Mobility' }
+        ];
+
+        let activeFilter = 'all';
+
+        function renderCatalog() {
+            const grid = document.getElementById('catalogGrid');
+            grid.innerHTML = '';
+            
+            const filtered = activeFilter === 'all' 
+                ? catalog 
+                : catalog.filter(p => p.category === activeFilter);
+
+            filtered.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <div class="product-img-wrap">
+                        <span class="badge badge-cyan product-badge">${p.badge}</span>
+                        <img src="${p.img}" alt="${p.name}" onerror="this.src='hi.jpg'">
+                    </div>
+                    <div class="product-body">
+                        <div>
+                            <div class="product-name">${p.name}</div>
+                            <div style="font-size:0.8em; color:var(--text-muted); text-transform:uppercase;">${p.category}</div>
+                        </div>
+                        <div>
+                            <div class="product-price-row">
+                                <span class="product-price">₹${p.price.toLocaleString()}</span>
+                                <span style="font-size:0.8em; color:var(--green-glow);">✓ In Stock</span>
+                            </div>
+                            <div class="product-actions">
+                                <button class="btn btn-primary" onclick="addToCart(${p.id})">
+                                    + Add to Cart
+                                </button>
+                                <button class="btn btn-outline" style="border-color:var(--magenta-glow); color:var(--magenta-glow); flex:0 0 42px;" onclick="toggleWishlist(${p.id})" title="Add to Wishlist">
+                                    ❤️
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterCatalog(category, btn) {
+            playCyberSound('click');
+            activeFilter = category;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderCatalog();
+        }
+
+        // Cart Management
+        function renderCartView() {
+            const cart = getGymCart();
+            const list = document.getElementById('cartItemsList');
+            const summaryBox = document.getElementById('cartSummaryBox');
+            const emptyNotice = document.getElementById('emptyCartNotice');
+            list.innerHTML = '';
+
+            if (cart.length === 0) {
+                summaryBox.style.display = 'none';
+                emptyNotice.style.display = 'block';
+                document.getElementById('cartCountBadge').textContent = '0 Items';
+                return;
+            }
+
+            emptyNotice.style.display = 'none';
+            summaryBox.style.display = 'block';
+
+            let subtotal = 0;
+            let totalItems = 0;
+
+            cart.forEach((item, index) => {
+                const qty = item.qty || 1;
+                const lineTotal = item.price * qty;
+                subtotal += lineTotal;
+                totalItems += qty;
+
+                const li = document.createElement('li');
+                li.className = 'cart-item-row';
+                li.innerHTML = `
+                    <div>
+                        <strong style="color:#fff;">${item.name}</strong>
+                        <div class="cart-qty-ctrl">
+                            <button class="qty-btn" onclick="updateQty(${index}, -1)">-</button>
+                            <span>${qty}</span>
+                            <button class="qty-btn" onclick="updateQty(${index}, 1)">+</button>
+                            <span style="color:var(--text-muted); margin-left:6px;">@ ₹${item.price}</span>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:700; color:var(--cyan-glow);">₹${lineTotal.toLocaleString()}</div>
+                        <button style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:0.75em;" onclick="removeCartItem(${index})">Remove</button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+
+            document.getElementById('cartCountBadge').textContent = `${totalItems} Items`;
+            const tax = Math.round(subtotal * 0.18);
+            const grandTotal = subtotal + tax;
+
+            document.getElementById('subtotalDisplay').textContent = `₹${subtotal.toLocaleString()}`;
+            document.getElementById('taxDisplay').textContent = `₹${tax.toLocaleString()}`;
+            document.getElementById('totalDisplay').textContent = `₹${grandTotal.toLocaleString()}`;
+
+            updateNavCartCount();
+        }
+
+        function addToCart(productId) {
+            playCyberSound('click');
+            const product = catalog.find(p => p.id === productId);
+            if (!product) return;
+
+            const cart = getGymCart();
+            const existing = cart.find(item => item.id === productId);
+
+            if (existing) {
+                existing.qty = (existing.qty || 1) + 1;
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+
+            saveGymCart(cart);
+            renderCartView();
+            playCyberSound('success');
+            showGymToast(`Added "${product.name}" to cart!`, "success");
+        }
+
+        function updateQty(index, change) {
+            playCyberSound('click');
+            const cart = getGymCart();
+            if (cart[index]) {
+                cart[index].qty = (cart[index].qty || 1) + change;
+                if (cart[index].qty <= 0) {
+                    cart.splice(index, 1);
+                }
+                saveGymCart(cart);
+                renderCartView();
+            }
+        }
+
+        function removeCartItem(index) {
+            playCyberSound('click');
+            const cart = getGymCart();
+            cart.splice(index, 1);
+            saveGymCart(cart);
+            renderCartView();
+            showGymToast("Item removed from cart.", "info");
+        }
+
+        function toggleWishlist(productId) {
+            playCyberSound('click');
+            const product = catalog.find(p => p.id === productId);
+            const wishlist = getGymWishlist();
+
+            if (!wishlist.some(p => p.id === productId)) {
+                wishlist.push(product);
+                saveGymWishlist(wishlist);
+                playCyberSound('success');
+                showGymToast(`"${product.name}" added to Wishlist!`, "success");
+            } else {
+                showGymToast(`Item already in your Wishlist.`, "info");
+            }
+        }
+
+        function proceedToCheckout() {
+            playCyberSound('click');
+            const cart = getGymCart();
+            if (cart.length === 0) {
+                showGymToast("Cart is currently empty.", "error");
+                return;
+            }
+
+            let subtotal = 0;
+            cart.forEach(item => subtotal += item.price * (item.qty || 1));
+            const tax = Math.round(subtotal * 0.18);
+            const grandTotal = subtotal + tax;
+
+            // Save order summary for payment page
+            const summary = {
+                itemsCount: cart.reduce((acc, i) => acc + (i.qty || 1), 0),
+                subtotal: subtotal,
+                tax: tax,
+                total: grandTotal,
+                timestamp: new Date().toISOString()
+            };
+            localStorage.setItem('gymOrderSummary', JSON.stringify(summary));
+
+            window.location.href = 'payment-method.html';
+        }
+
+        renderCatalog();
+        renderCartView();
+    </script>
+</body>
+</html>

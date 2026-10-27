@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Hub - Evolution & Progress Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .kpi-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            text-align: center;
+        }
+
+        .kpi-label {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .kpi-value {
+            font-size: 2em;
+            font-weight: 800;
+            color: var(--cyan-glow);
+            margin-top: 4px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .chart-box {
+            background: rgba(14, 22, 36, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .chart-box h3 {
+            font-size: 1.1em;
+            color: #fff;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-list {
+            list-style: none;
+            padding: 0;
+            max-height: 280px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-item {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid var(--cyan-glow);
+        }
+
+        .log-item:hover {
+            background: rgba(0, 246, 255, 0.08);
+        }
+
+        .delete-btn {
+            background: transparent;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1.1em;
+            padding: 4px;
+            transition: 0.2s;
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.2);
+            color: #ff6688;
+        }
+
+        @media (max-width: 600px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Shared Top Navbar -->
+    <div id="gym-navbar"></div>
+
+    <div class="page-container">
+        
+        <div class="page-header">
+            <span class="badge badge-green" style="margin-bottom: 8px;">BIOMETRIC TELEMETRY</span>
+            <h1 class="page-title">Evolution & Progress Tracker</h1>
+            <p class="page-subtitle">Quantify hypertrophy gains, log workout metrics, and visualize timeline trajectories.</p>
+        </div>
+
+        <!-- KPI Metrics Ribbon -->
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-label">Workouts Logged</div>
+                <div class="kpi-value" id="kpiWorkoutCount">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Current Body Mass</div>
+                <div class="kpi-value text-cyan" id="kpiCurrentWeight">-- kg</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Chest Measurement</div>
+                <div class="kpi-value text-magenta" id="kpiCurrentChest">-- cm</div>
+            </div>
+        </div>
+
+        <!-- Forms & Logging Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px;">
+            
+            <!-- Workout Intensity Log Form -->
+            <div class="card-glass">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 18px;">
+                    <h2 style="font-size: 1.25em; color: var(--cyan-glow);">🏋️ Log Workout Session</h2>
+                    <span class="badge badge-cyan">SETS & REPS</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Exercise / Technique Name</label>
+                    <input type="text" id="logExName" placeholder="e.g. Barbell Squats, Bench Press">
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">Sets</label>
+                        <input type="number" id="logSets" placeholder="4" min="1">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">Reps</label>
+                        <input type="number" id="logReps" placeholder="12" min="1">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">Duration (Min)</label>
+                        <input type="number" id="logDuration" placeholder="45" min="1">
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-block" onclick="recordWorkout()">
+                    + Add to Session History
+                </button>
+
+                <!-- History List -->
+                <div style="margin-top: 25px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <h4 style="font-size: 0.9em; color: var(--text-muted); text-transform: uppercase;">Recent Log Entries</h4>
+                        <button class="btn btn-sm btn-outline" style="font-size:0.7em; padding:2px 8px;" onclick="clearWorkoutLogs()">Clear</button>
+                    </div>
+                    <ul class="log-list" id="workoutLogsList"></ul>
+                </div>
+            </div>
+
+            <!-- Body Measurements Form -->
+            <div class="card-glass">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 18px;">
+                    <h2 style="font-size: 1.25em; color: var(--magenta-glow);">📏 Log Physical Measurements</h2>
+                    <span class="badge badge-magenta">BIOMETRICS</span>
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">Body Mass (kg)</label>
+                        <input type="number" id="measWeight" placeholder="75.5" step="0.1">
+                    </div>
+                    <div class="form-group" style="flex:1;">
+                        <label class="form-label">Chest Span (cm)</label>
+                        <input type="number" id="measChest" placeholder="102" step="0.5">
+                    </div>
+                </div>
+
+                <button class="btn btn-magenta btn-block" onclick="recordMeasurements()">
+                    Update Evolution Chart
+                </button>
+
+                <p style="font-size: 0.85em; color: var(--text-muted); margin-top: 15px; line-height: 1.5;">
+                    💡 Log measurements weekly under identical fasting conditions for peak metric consistency.
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Telemetry Charts -->
+        <div class="charts-grid">
+            
+            <div class="chart-box">
+                <h3>
+                    <span>Mass Evolution Timeline</span>
+                    <span class="badge badge-cyan">kg</span>
+                </h3>
+                <canvas id="weightChart" height="220"></canvas>
+            </div>
+
+            <div class="chart-box">
+                <h3>
+                    <span>Chest Expansion Timeline</span>
+                    <span class="badge badge-magenta">cm</span>
+                </h3>
+                <canvas id="chestChart" height="220"></canvas>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script>
+        const user = protectPage();
+        renderNavbar('progress');
+
+        // Initial Seed Measurements if empty
+        function getSavedMeasurements() {
+            let data = JSON.parse(localStorage.getItem('gymMeasurements'));
+            if (!data || !Array.isArray(data.labels) || data.labels.length === 0) {
+                data = {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    weights: [72.0, 72.8, 73.5, 74.2],
+                    chests: [98.0, 99.0, 100.5, 102.0]
+                };
+                localStorage.setItem('gymMeasurements', JSON.stringify(data));
+            }
+            return data;
+        }
+
+        function getSavedWorkoutLogs() {
+            let logs = JSON.parse(localStorage.getItem('gymWorkoutLogs'));
+            if (!logs || !Array.isArray(logs)) {
+                logs = [
+                    { name: "Barbell Bench Press", sets: 4, reps: 10, duration: 25, date: "Yesterday" },
+                    { name: "Weighted Squats", sets: 4, reps: 12, duration: 30, date: "2 days ago" }
+                ];
+                localStorage.setItem('gymWorkoutLogs', JSON.stringify(logs));
+            }
+            return logs;
+        }
+
+        let measurements = getSavedMeasurements();
+        let workoutLogs = getSavedWorkoutLogs();
+
+        // Render workout logs
+        function renderLogsList() {
+            const list = document.getElementById('workoutLogsList');
+            list.innerHTML = '';
+
+            if (workoutLogs.length === 0) {
+                list.innerHTML = '<li style="color:var(--text-muted); font-size:0.85em; padding:10px 0;">No logs yet. Record your first session above!</li>';
+            } else {
+                workoutLogs.forEach((log, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'log-item';
+                    li.innerHTML = `
+                        <div>
+                            <strong style="color:#fff;">${log.name}</strong>
+                            <div style="font-size:0.8em; color:var(--cyan-glow);">
+                                ${log.sets} Sets × ${log.reps} Reps • ${log.duration} min
+                            </div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteWorkoutLog(${index})" title="Delete entry">✕</button>
+                    `;
+                    list.appendChild(li);
+                });
+            }
+
+            document.getElementById('kpiWorkoutCount').textContent = workoutLogs.length;
+        }
+
+        function recordWorkout() {
+            playCyberSound('click');
+            const name = document.getElementById('logExName').value.trim();
+            const sets = parseInt(document.getElementById('logSets').value);
+            const reps = parseInt(document.getElementById('logReps').value);
+            const duration = parseInt(document.getElementById('logDuration').value);
+
+            if (!name || !sets || !reps || !duration) {
+                showGymToast("All workout parameters required.", "error");
+                return;
+            }
+
+            workoutLogs.unshift({ name, sets, reps, duration, date: "Just now" });
+            localStorage.setItem('gymWorkoutLogs', JSON.stringify(workoutLogs));
+            renderLogsList();
+
+            document.getElementById('logExName').value = '';
+            document.getElementById('logSets').value = '';
+            document.getElementById('logReps').value = '';
+            document.getElementById('logDuration').value = '';
+
+            playCyberSound('success');
+            showGymToast("Workout recorded to timeline!", "success");
+        }
+
+        function deleteWorkoutLog(idx) {
+            playCyberSound('click');
+            workoutLogs.splice(idx, 1);
+            localStorage.setItem('gymWorkoutLogs', JSON.stringify(workoutLogs));
+            renderLogsList();
+        }
+
+        function clearWorkoutLogs() {
+            if (confirm("Clear all recorded workout logs?")) {
+                workoutLogs = [];
+                localStorage.setItem('gymWorkoutLogs', JSON.stringify(workoutLogs));
+                renderLogsList();
+                showGymToast("Workout log cleared.", "info");
+            }
+        }
+
+        // Charts Setup
+        const commonChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: '#cbd5e1', font: { family: 'Poppins' } } }
+            },
+            scales: {
+                x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+                y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }
+            }
+        };
+
+        const weightCtx = document.getElementById('weightChart').getContext('2d');
+        const weightChart = new Chart(weightCtx, {
+            type: 'line',
+            data: {
+                labels: measurements.labels,
+                datasets: [{
+                    label: 'Body Mass (kg)',
+                    data: measurements.weights,
+                    borderColor: '#00f6ff',
+                    backgroundColor: 'rgba(0, 246, 255, 0.1)',
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 6,
+                    pointBackgroundColor: '#00f6ff',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: commonChartOptions
+        });
+
+        const chestCtx = document.getElementById('chestChart').getContext('2d');
+        const chestChart = new Chart(chestCtx, {
+            type: 'line',
+            data: {
+                labels: measurements.labels,
+                datasets: [{
+                    label: 'Chest Span (cm)',
+                    data: measurements.chests,
+                    borderColor: '#ff007f',
+                    backgroundColor: 'rgba(255, 0, 127, 0.1)',
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 6,
+                    pointBackgroundColor: '#ff007f',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: commonChartOptions
+        });
+
+        function updateKpis() {
+            if (measurements.weights.length > 0) {
+                const latestWeight = measurements.weights[measurements.weights.length - 1];
+                document.getElementById('kpiCurrentWeight').textContent = `${latestWeight} kg`;
+            }
+            if (measurements.chests.length > 0) {
+                const latestChest = measurements.chests[measurements.chests.length - 1];
+                document.getElementById('kpiCurrentChest').textContent = `${latestChest} cm`;
+            }
+        }
+
+        function recordMeasurements() {
+            playCyberSound('click');
+            const w = parseFloat(document.getElementById('measWeight').value);
+            const c = parseFloat(document.getElementById('measChest').value);
+
+            if (!w || !c || w <= 0 || c <= 0) {
+                showGymToast("Valid positive measurements required.", "error");
+                return;
+            }
+
+            const now = new Date();
+            const dateLabel = `${now.getMonth()+1}/${now.getDate()}`;
+
+            measurements.labels.push(dateLabel);
+            measurements.weights.push(w);
+            measurements.chests.push(c);
+
+            localStorage.setItem('gymMeasurements', JSON.stringify(measurements));
+
+            weightChart.update();
+            chestChart.update();
+            updateKpis();
+
+            document.getElementById('measWeight').value = '';
+            document.getElementById('measChest').value = '';
+
+            playCyberSound('success');
+            showGymToast("Evolution chart updated successfully!", "success");
+        }
+
+        renderLogsList();
+        updateKpis();
+    </script>
+</body>
+</html>

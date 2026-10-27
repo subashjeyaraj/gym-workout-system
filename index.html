@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Hub - Authentication Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .auth-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 440px;
+            background: rgba(14, 22, 36, 0.82);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 36px 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 246, 255, 0.15);
+            animation: cardAppear 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes cardAppear {
+            from { transform: translateY(30px) scale(0.96); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .brand-header .logo {
+            font-size: 2.8em;
+            filter: drop-shadow(0 0 12px var(--cyan-glow));
+            display: inline-block;
+            animation: pulseIcon 3s infinite;
+        }
+
+        .brand-header h1 {
+            font-size: 2em;
+            letter-spacing: 3px;
+            color: var(--cyan-glow);
+            text-shadow: 0 0 15px rgba(0, 246, 255, 0.6);
+            margin-top: 5px;
+        }
+
+        .brand-header p {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .demo-bar {
+            background: rgba(0, 246, 255, 0.08);
+            border: 1px dashed rgba(0, 246, 255, 0.35);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            margin-bottom: 22px;
+            text-align: center;
+        }
+
+        .demo-bar p {
+            font-size: 0.8em;
+            color: var(--cyan-glow);
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .demo-btn-group {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .demo-pill {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: var(--radius-full);
+            font-size: 0.75em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .demo-pill:hover {
+            background: var(--cyan-glow);
+            color: #000;
+            border-color: var(--cyan-glow);
+            box-shadow: 0 0 12px var(--cyan-glow);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .auth-footer {
+            margin-top: 22px;
+            text-align: center;
+            font-size: 0.88em;
+            color: var(--text-muted);
+        }
+
+        .auth-footer span {
+            color: var(--magenta-glow);
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: underline;
+            margin-left: 4px;
+        }
+
+        .auth-footer span:hover {
+            color: #fff;
+            text-shadow: 0 0 10px var(--magenta-glow);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fullscreen Initializer -->
+    <div id="loader">
+        <div class="loader-ring"></div>
+        <h3>GYM HUB CORE</h3>
+        <p>INITIALIZING PROTOCOL...</p>
+    </div>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            
+            <div class="brand-header">
+                <div class="logo">⚡</div>
+                <h1>GYM<span class="highlight text-cyan">HUB</span></h1>
+                <p>BIOMETRIC FITNESS COMMAND</p>
+            </div>
+
+            <!-- Instant One-Click Demo Access -->
+            <div class="demo-bar">
+                <p>⚡ Quick Instant Access</p>
+                <div class="demo-btn-group">
+                    <button type="button" class="demo-pill" onclick="quickLogin('user')">Demo Athlete</button>
+                    <button type="button" class="demo-pill" onclick="quickLogin('trainer')">Trainer</button>
+                    <button type="button" class="demo-pill" onclick="quickLogin('admin')">Admin</button>
+                </div>
+            </div>
+
+            <!-- LOGIN VIEW -->
+            <div id="login-section">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label" for="loginEmail">Email Address</label>
+                        <input type="email" id="loginEmail" placeholder="e.g. demo@gymhub.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="loginPassword">Security Password</label>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="loginRole">Clearance Level</label>
+                        <select id="loginRole" required>
+                            <option value="user">Athlete (User)</option>
+                            <option value="trainer">Tactical Coach (Trainer)</option>
+                            <option value="admin">System Admin (SADMIN)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-block" style="margin-top: 15px;">
+                        Authorize Access ➔
+                    </button>
+
+                    <div class="auth-footer">
+                        Need biometric credentials? 
+                        <span onclick="toggleAuth('register')">Register New ID</span>
+                    </div>
+                </form>
+            </div>
+
+            <!-- REGISTRATION VIEW -->
+            <div id="register-section" style="display: none;">
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label class="form-label" for="regName">Full Name</label>
+                        <input type="text" id="regName" placeholder="e.g. Alex Hunter" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="regEmail">Email</label>
+                            <input type="email" id="regEmail" placeholder="name@domain.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="regPassword">Password</label>
+                            <input type="password" id="regPassword" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="regAge">Age</label>
+                            <input type="number" id="regAge" min="12" max="100" placeholder="24" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="regHeight">Height (cm)</label>
+                            <input type="number" id="regHeight" min="100" max="250" placeholder="178" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="regWeight">Weight (kg)</label>
+                            <input type="number" id="regWeight" min="30" max="300" placeholder="75" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="regGoal">Primary Goal</label>
+                            <select id="regGoal" required>
+                                <option value="muscle">Hypertrophy (Muscle Gain)</option>
+                                <option value="weight_loss">Caloric Deficit (Fat Loss)</option>
+                                <option value="endurance">Conditioning & Stamina</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="regRole">Role</label>
+                            <select id="regRole" required>
+                                <option value="user">Athlete (User)</option>
+                                <option value="trainer">Trainer</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-magenta btn-block" style="margin-top: 15px;">
+                        Initialize Profile ➔
+                    </button>
+
+                    <div class="auth-footer">
+                        Existing Athlete? 
+                        <span onclick="toggleAuth('login')">Return to Login</span>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+    <script>
+        // Check if user is already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const current = getCurrentUser();
+            if (current) {
+                // Pre-fill or auto-redirect if desired
+                document.getElementById('loginEmail').value = current.email || 'demo@gymhub.com';
+                document.getElementById('loginRole').value = current.role || 'user';
+            } else {
+                document.getElementById('loginEmail').value = 'demo@gymhub.com';
+                document.getElementById('loginPassword').value = 'demo';
+            }
+        });
+
+        function toggleAuth(target) {
+            playCyberSound('click');
+            const loginSec = document.getElementById('login-section');
+            const regSec = document.getElementById('register-section');
+            if (target === 'register') {
+                loginSec.style.display = 'none';
+                regSec.style.display = 'block';
+            } else {
+                loginSec.style.display = 'block';
+                regSec.style.display = 'none';
+            }
+        }
+
+        // Quick 1-Click Login for effortless testing
+        function quickLogin(role) {
+            playCyberSound('click');
+            const users = JSON.parse(localStorage.getItem('gymUsers')) || DEFAULT_USERS;
+            const targetUser = users.find(u => u.role === role) || users[0];
+            if (targetUser) {
+                setCurrentUser(targetUser);
+                playCyberSound('success');
+                showGymToast(`Authorized as ${targetUser.name}`, "success");
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 400);
+            }
+        }
+
+        // Regular Login Handler
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword').value;
+            const role = document.getElementById('loginRole').value;
+
+            const users = JSON.parse(localStorage.getItem('gymUsers')) || DEFAULT_USERS;
+            const foundUser = users.find(u => 
+                u.email.toLowerCase() === email && 
+                u.password === password && 
+                u.role === role
+            );
+
+            if (foundUser) {
+                setCurrentUser(foundUser);
+                playCyberSound('success');
+                showGymToast(`Access granted, ${foundUser.name}.`, "success");
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 450);
+            } else {
+                playCyberSound('error');
+                showGymToast("Invalid credentials or clearance level.", "error");
+            }
+        });
+
+        // Registration Handler
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim().toLowerCase();
+            const password = document.getElementById('regPassword').value;
+            const age = parseInt(document.getElementById('regAge').value) || 24;
+            const height = parseFloat(document.getElementById('regHeight').value) || 175;
+            const weight = parseFloat(document.getElementById('regWeight').value) || 72;
+            const goal = document.getElementById('regGoal').value;
+            const role = document.getElementById('regRole').value;
+
+            let users = JSON.parse(localStorage.getItem('gymUsers')) || DEFAULT_USERS;
+            if (users.some(u => u.email.toLowerCase() === email)) {
+                playCyberSound('error');
+                showGymToast("Email already registered in system.", "error");
+                return;
+            }
+
+            const newUser = { name, email, password, age, height, weight, goal, role };
+            users.push(newUser);
+            localStorage.setItem('gymUsers', JSON.stringify(users));
+            setCurrentUser(newUser);
+
+            playCyberSound('success');
+            showGymToast("Bio-Registration successful! Loading Dashboard...", "success");
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 600);
+        });
+    </script>
+</body>
+</html>
